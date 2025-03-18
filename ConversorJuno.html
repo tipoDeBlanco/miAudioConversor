@@ -4,28 +4,43 @@
   <meta charset="utf-8"/>
 </head>
 <body>
-  <input type="file" accept="audio/*" onchange="encodeFile(this.files[0])" hidden/>
   
   <!-- Script de Thunkable Webviewer Extension -->
   <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js"></script>
   
   <script>
+    // Función para obtener parámetros de la URL
+    function getParameterByName(name) {
+      let url = window.location.href;
+      name = name.replace(/[\\[]/, "\\[").replace(/[\\]]/, "\\]");
+      let regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+          results = regex.exec(url);
+      return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
     function encodeFile(file) {
       let reader = new FileReader();
       reader.onloadend = function() {
         // Enviar la cadena Base64 de vuelta a Thunkable
         ThunkableWebviewerExtension.postMessage(reader.result);
       };
-      reader.readAsDataURL(file);  // Lee el archivo como Base64 (Data URL)
+      reader.readAsDataURL(file);  // Convierte el archivo a Base64 (Data URL)
     }
 
-    // Carga automáticamente el archivo m4a local en Android (Thunkable Live)
-    fetch("file:///data/user/0/com.thunkable.live/cache/sound.m4a")
-      .then(res => res.blob())
-      .then(blob => encodeFile(blob))
-      .catch(err => {
-        ThunkableWebviewerExtension.postMessage("ERROR AL LEER ARCHIVO: " + err);
-      });
+    // Obtener la ruta del archivo desde la URL
+    let audioPath = getParameterByName("audio");
+
+    if (audioPath) {
+      fetch(audioPath)
+        .then(res => res.blob())
+        .then(blob => encodeFile(blob))
+        .catch(err => {
+          ThunkableWebviewerExtension.postMessage("ERROR: " + err);
+        });
+    } else {
+      ThunkableWebviewerExtension.postMessage("ERROR: No se encontró la ruta del audio");
+    }
   </script>
 </body>
 </html>
+
