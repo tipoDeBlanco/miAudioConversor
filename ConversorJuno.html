@@ -4,12 +4,11 @@
   <meta charset="utf-8"/>
 </head>
 <body>
-  
-  <!-- Script de Thunkable Webviewer Extension -->
+  <p id="debugMessage">Esperando archivo...</p>
+
   <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js"></script>
   
   <script>
-    // Función para obtener parámetros de la URL
     function getParameterByName(name) {
       let url = window.location.href;
       name = name.replace(/[\\[]/, "\\[").replace(/[\\]]/, "\\]");
@@ -30,17 +29,23 @@
     // Obtener la ruta del archivo desde la URL
     let audioPath = getParameterByName("audio");
 
+    // Mostrar la ruta obtenida en la pantalla
+    document.getElementById("debugMessage").innerText = "Ruta recibida: " + audioPath;
+
     if (audioPath) {
       fetch(audioPath)
         .then(res => res.blob())
         .then(blob => encodeFile(blob))
         .catch(err => {
+          document.getElementById("debugMessage").innerText = "ERROR: " + err;
           ThunkableWebviewerExtension.postMessage("ERROR: " + err);
         });
     } else {
+      document.getElementById("debugMessage").innerText = "ERROR: No se recibió ninguna ruta";
       ThunkableWebviewerExtension.postMessage("ERROR: No se encontró la ruta del audio");
     }
   </script>
 </body>
 </html>
+
 
